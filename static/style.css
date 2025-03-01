@@ -1,0 +1,121 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #B1C29E;
+}
+
+.fridge {
+    background-color: #d3d3d3; /* Light gray for the fridge background */
+    padding: 20px;
+    border: 10px solid #a9a9a9; /* Darker gray for the fridge border */
+    border-radius: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
+
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form input {
+    width: 97%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    
+}
+
+form button {
+    background-color: #F0A04B;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #b1712d;
+}
+
+/* Post-It Notes */
+.post-it-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.post-it {
+    background-color: #FCE7C8; 
+    padding: 15px;
+    border-radius: 10px;
+    width: 200px;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
+    transform: rotate(2deg); /* Slight rotation for a natural look */
+    transition: transform 0.2s ease;
+}
+
+.post-it.warn-expired {
+    background-color: #FADA7A; /* Red for expired items */
+}
+
+.post-it.expired {
+    background-color: #B82132; /* Red for expired items */
+}
+
+
+.post-it:hover {
+    transform: rotate(0deg) scale(1.05); /* Straighten and slightly enlarge on hover */
+}
+
+.post-it h3 {
+    margin: 0 0 10px;
+    font-size: 1.2em;
+}
+
+.post-it p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+
+
+.actions {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.actions a {
+    color: #F0A04B;
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+a.expired {
+    color: #880817;
+}
+.actions a:hover {
+    text-decoration: none;
+    font-weight: bold;
+}
+
