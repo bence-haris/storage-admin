@@ -20,7 +20,7 @@ def make_migrations():
         database.create_all()
 
 
-# make_migrations()
+#make_migrations()
 print("HI")
 
 @app.route("/")
@@ -31,11 +31,11 @@ def index():
         
         if item.opened:
             opening = item.open_date
-            item.after_open = (opening.year, opening.month, opening.day+item.after_open)
+            item.after_open = opening + datetime.timedelta(item.after_open)
             item.opened = "Felbontva"
-            if current_time.year == opening.year and current_time.month == opening.month and current_time.day == item.after_open[2]:
+            if current_time.year == opening.year and current_time.month == opening.month and current_time.day == item.after_open.day:
                 item.after_open = "MA!"
-            elif current_time.year == opening.year and current_time.month == opening.month and current_time.day > item.after_open[2]:
+            elif current_time.year >= opening.year and current_time.month >= opening.month and current_time.day > item.after_open.day:
                 item.after_open = "LEJÁRT!!!"
         else:
             item.open_date = ""
@@ -49,8 +49,19 @@ def add_item():
     item_name = request.form.get("item_name")
     item_desc = request.form.get("item_desc")
     item_after_open = request.form.get("item_after_open")
+    item_opened = request.form.get("item_opened")
 
-    new_item = Item(name=item_name, description=item_desc, after_open=item_after_open)
+    if item_opened == "":
+        item_opened_converted = None
+        opened = False
+    else:
+        parts = item_opened.split("-")
+        item_opened_converted = datetime.datetime(year=int(parts[0]), month=int(parts[1]), day=int(parts[2]), hour=0, minute=0, second=0, microsecond=0)
+        opened = True
+
+    print(f"AT TIME: {item_opened}")
+
+    new_item = Item(name=item_name, description=item_desc, after_open=item_after_open,open_date=item_opened_converted, opened=opened)
 
     database.session.add(new_item)
     database.session.commit()
