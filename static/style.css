@@ -119,3 +119,39 @@ a.expired {
     font-weight: bold;
 }
 
+
+
+
+
+
+
+/* Barcode scan button */
+.scan-bar {
+    text-align: center;
+    margin-top: 5%; 
+}
+
+.scan-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #F0A04B;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.scan-link:hover {
+    background-color: #b1712d;
+    transform: scale(1.05);
+}
+
+.scan-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}

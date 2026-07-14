@@ -11,6 +11,8 @@
     <div class="fridge">
         <h1>Termék hozzáadása</h1>
         <form action="/add" method="POST">
+            <label for="item_id">Kód:</label>
+            <input type="text" id="item_id" name="item_id">
             <label for="item_name">Termék:</label>
             <input type="text" id="item_name" name="item_name" required>
             <label for="item_desc">Leírás:</label>
@@ -19,6 +21,9 @@
             <input type="date" id="item_opened" name="item_opened">
             <label for="item_after_open">Felbontás után fogyasztható (nap):</label>
             <input type="number" id="item_after_open" name="item_after_open" min="0" max="365" required>
+            <label for="item_active">Megvettem</label>
+            <input type="checkbox" id="item_active" name="item_active" value="1">
+            
             <button type="submit">Hozzáad</button>
         </form>
         <h2>Készlet</h2>
@@ -58,6 +63,24 @@
             </div>
             {% endfor %}
         </div>
+        <div class="scan-bar">
+    <a class="scan-link" href="/scan" title="Vonalkód beolvasása">
+        <svg class="scan-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- corner brackets (scanner frame) -->
+            <path d="M2 7V4a2 2 0 0 1 2-2h3M17 2h3a2 2 0 0 1 2 2v3M22 17v3a2 2 0 0 1-2 2h-3M7 22H4a2 2 0 0 1-2-2v-3"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <!-- bars -->
+            <g fill="currentColor">
+                <rect x="6"    y="7" width="1.5" height="10" rx="0.5"/>
+                <rect x="9"    y="7" width="1"   height="10" rx="0.5"/>
+                <rect x="11.5" y="7" width="2"   height="10" rx="0.5"/>
+                <rect x="15"   y="7" width="1"   height="10" rx="0.5"/>
+                <rect x="17.5" y="7" width="1.5" height="10" rx="0.5"/>
+            </g>
+        </svg>
+        <span>Vonalkód beolvasása</span>
+    </a>
+</div>
     </div>
 </body>
 </html>

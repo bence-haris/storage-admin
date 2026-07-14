@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vonalkód beolvasása</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* ---- Scanner card (matches the white form card in style.css) ---- */
+    .scanner {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .scanner video,
+    .scanner canvas {
+      width: 100%;
+      display: block;
+      border-radius: 10px;
+      background: #333;
+      box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .scanner-actions {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #F0A04B;
+      color: #fff;
+      text-decoration: none;
+      font-family: inherit;
+      font-size: 1em;
+      font-weight: bold;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .btn:hover { background-color: #b1712d; }
+
+    .btn-secondary { background-color: #a9a9a9; }
+    .btn-secondary:hover { background-color: #7d7d7d; }
+
+    .btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    /* ---- Receipt ---- */
+    .receipt-wrap {
+      display: flex;
+      justify-content: center;
+      /* drop-shadow, not box-shadow, so the shadow follows the torn edges */
+      filter: drop-shadow(3px 4px 6px rgba(0, 0, 0, 0.35));
+    }
+
+    .receipt {
+      width: 300px;
+      background: #fdfdf8;
+      color: #222;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85em;
+      line-height: 1.5;
+      padding: 28px 22px;
+      /* Torn zigzag edges, top and bottom */
+      -webkit-mask:
+        conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+          bottom / 14px 7px repeat-x,
+        conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg)
+          top / 14px 7px repeat-x,
+        linear-gradient(#000 0 0) center / 100% calc(100% - 14px) no-repeat;
+      mask:
+        conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+          bottom / 14px 7px repeat-x,
+        conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg)
+          top / 14px 7px repeat-x,
+        linear-gradient(#000 0 0) center / 100% calc(100% - 14px) no-repeat;
+    }
+
+    .receipt-head { text-align: center; margin-bottom: 12px; }
+
+    .receipt-head .shop {
+      font-weight: bold;
+      font-size: 1.15em;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .receipt-head .sub {
+      font-size: 0.85em;
+      color: #666;
+      letter-spacing: 1px;
+    }
+
+    .rule {
+      border-top: 1px dashed #999;
+      margin: 10px 0;
+    }
+
+    /* Dotted leader line:  label ......... value */
+    .row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 4px 0;
+    }
+    .row .label { white-space: nowrap; }
+    .row .dots {
+      flex: 1;
+      border-bottom: 1px dotted #bbb;
+      transform: translateY(-3px);
+    }
+    .row .value {
+      font-weight: bold;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .status {
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 0;
+    }
+    .status.ok    { color: #2d6a3f; }
+    .status.warn  { color: #9a6b00; }
+    .status.error { color: #B82132; }
+
+    /* Printed barcode at the foot of the receipt */
+    .barcode-print { margin-top: 12px; text-align: center; }
+
+    .barcode-print .bars {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 1px;
+      height: 44px;
+      margin-bottom: 6px;
+    }
+    .barcode-print .bars span {
+      display: block;
+      height: 100%;
+      background: #222;
+    }
+    .barcode-print .digits {
+      letter-spacing: 4px;
+      font-size: 0.95em;
+    }
+
+    .receipt-foot {
+      text-align: center;
+      font-size: 0.8em;
+      color: #666;
+      letter-spacing: 1px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="fridge">
+    <h1>Vonalkód beolvasása</h1>
+
+    <div class="scanner">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" hidden></canvas>
+
+      <div class="scanner-actions">
+        <button type="button" id="capture" class="btn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M2 7V4a2 2 0 0 1 2-2h3M17 2h3a2 2 0 0 1 2 2v3M22 17v3a2 2 0 0 1-2 2h-3M7 22H4a2 2 0 0 1-2-2v-3"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <g fill="currentColor">
+              <rect x="6"    y="7" width="1.5" height="10" rx="0.5"/>
+              <rect x="9"    y="7" width="1"   height="10" rx="0.5"/>
+              <rect x="11.5" y="7" width="2"   height="10" rx="0.5"/>
+              <rect x="15"   y="7" width="1"   height="10" rx="0.5"/>
+              <rect x="17.5" y="7" width="1.5" height="10" rx="0.5"/>
+            </g>
+          </svg>
+          Beolvasás
+        </button>
+
+        <a href="../" class="btn btn-secondary">Vissza</a>
+      </div>
+    </div>
+
+    <div class="receipt-wrap">
+      <div id="receipt" class="receipt" hidden></div>
+    </div>
+  </div>
+
+  <script>
+    const video   = document.getElementById("video");
+    const canvas  = document.getElementById("canvas");
+    const receipt = document.getElementById("receipt");
+
+    // Start the camera (native API, no libraries)
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user",
+        width:  { ideal: 1920 },   // ask for HD — the single most important fix
+        height: { ideal: 1080 },
+        // continuous autofocus where the browser supports it
+        advanced: [{ focusMode: "continuous" }]
+      }
+    })
+      .then(stream => { video.srcObject = stream; })
+      .catch(err => {
+        printReceipt({
+          status: "error",
+          statusText: "Kamera hiba",
+          rows: [["Üzenet", err.message]],
+          note: "A kamerához HTTPS vagy localhost szükséges."
+        });
+      });
+
+    document.getElementById("capture").addEventListener("click", () => {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+
+      canvas.toBlob(blob => {
+        const fd = new FormData();
+        fd.append("image", blob, "frame.jpg");
+        fetch("/api/scan", { method: "POST", body: fd })
+          .then(r => r.json())
+          .then(show)
+          .catch(err => printReceipt({
+            status: "error",
+            statusText: "Kérés sikertelen",
+            rows: [["Hiba", String(err)]]
+          }));
+      }, "image/jpeg", 0.9);
+    });
+
+    function show(data) {
+      if (data.error) {
+        printReceipt({
+          status: "error",
+          statusText: "Hiba",
+          rows: [["Üzenet", data.error]]
+        });
+      } else if (!data.barcode) {
+        printReceipt({
+          status: "warn",
+          statusText: "Nincs találat",
+          note: "Tartsd stabilan és próbáld újra."
+        });
+      } else if (data.found) {
+        printReceipt({
+          status: "ok",
+          statusText: "Készleten",
+          rows: [
+            ["Termék",    data.item.name],
+            ["Mennyiség", data.item.qty],
+            ["Típus",     data.type]
+          ],
+          barcode: data.barcode
+        });
+      } else {
+        printReceipt({
+          status: "warn",
+          statusText: "Nincs készleten",
+          rows: [["Típus", data.type]],
+          barcode: data.barcode,
+          note: "Vedd fel a termékek közé."
+        });
+      }
+    }
+
+    // Decorative bars — deterministic widths derived from the code itself
+    function barsFor(code) {
+      let html = "";
+      for (let i = 0; i < code.length * 4; i++) {
+        const w = 1 + (code.charCodeAt(i % code.length) + i) % 3;
+        html += `<span style="width:${w}px"></span>`;
+      }
+      return html;
+    }
+
+    function printReceipt({ status, statusText, rows = [], barcode, note }) {
+      const now = new Date();
+      const stamp = now.toLocaleDateString("hu-HU") + " " +
+                    now.toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" });
+
+      const rowHtml = rows.map(([label, value]) => `
+        <div class="row">
+          <span class="label">${label}</span>
+          <span class="dots"></span>
+          <span class="value">${value}</span>
+        </div>`).join("");
+
+      const barcodeHtml = barcode ? `
+        <div class="rule"></div>
+        <div class="barcode-print">
+          <div class="bars">${barsFor(barcode)}</div>
+          <div class="digits">${barcode}</div>
+        </div>` : "";
+
+      receipt.hidden = false;
+      receipt.innerHTML = `
+        <div class="receipt-head">
+          <div class="shop">Hűtő Management</div>
+          <div class="sub">Vonalkód beolvasás</div>
+        </div>
+        <div class="rule"></div>
+        <div class="status ${status}">${statusText}</div>
+        <div class="rule"></div>
+        ${rowHtml}
+        ${barcodeHtml}
+        <div class="rule"></div>
+        <div class="receipt-foot">${stamp}</div>
+        ${note ? `<div class="receipt-foot">${note}</div>` : ""}
+      `;
+    }
+  </script>
+</body>
+</html>

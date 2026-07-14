@@ -23,8 +23,9 @@ class Item(database.Model):
     opened = database.Column(database.Boolean, default=False)
     open_date = database.Column(database.Date, onupdate=_get_time)
     after_open = database.Column(database.Integer, default=3)
+    active = database.Column(database.Boolean, default=True)
+    daytime = database.Column(database.Boolean, default=True)
 
-    
 
     def __repr__(self):
         return f"{self.name} : Opened: {self.opened}"
