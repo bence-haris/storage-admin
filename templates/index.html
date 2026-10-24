@@ -9,6 +9,8 @@
 </head>
 <body>
     <div class="fridge">
+            <a href="{{ url_for('items') }}" class="btn btn-secondary">Lista</a>
+
         <h1>Termék hozzáadása</h1>
         <form action="/add" method="POST">
             <label for="item_id">Kód:</label>
@@ -56,7 +58,7 @@
                     <a class="
                         {% if item.after_open == 'LEJÁRT!!!' %}
                             expired
-                        {% endif %}" href="{{ url_for('delete_item', item_id=item.id) }}">Delete
+                        {% endif %}" href="{{ url_for('deactivate_item', item_id=item.id) }}">Delete
                         <i class="fa-solid fa-trash"></i>
                     </a>
                 </div>
@@ -65,6 +67,7 @@
         </div>
         <div class="scan-bar">
     <a class="scan-link" href="/scan" title="Vonalkód beolvasása">
+    
         <svg class="scan-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <!-- corner brackets (scanner frame) -->
             <path d="M2 7V4a2 2 0 0 1 2-2h3M17 2h3a2 2 0 0 1 2 2v3M22 17v3a2 2 0 0 1-2 2h-3M7 22H4a2 2 0 0 1-2-2v-3"

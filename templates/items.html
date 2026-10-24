@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>Összes termék</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .item-list {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #eee;
+    }
+    .item-row:last-child { border-bottom: none; }
+
+    /* Inactive items are dimmed */
+    .item-row.inactive { background-color: #f5f5f5; }
+    .item-row.inactive .item-info { opacity: 0.55; }
+
+    .item-info { flex: 1; min-width: 0; }
+    .item-info h3 { margin: 0 0 3px; font-size: 1.05em; color: #333; }
+    .item-info p  { margin: 0; font-size: 0.85em; color: #666; }
+
+    .badge {
+      font-size: 0.75em;
+      font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .badge.on  { background-color: #e6f4ea; color: #2d6a3f; }
+    .badge.off { background-color: #e0e0e0; color: #666; }
+
+    .item-row form { margin: 0; padding: 0; background: none; box-shadow: none; }
+
+   
+
+    .page-actions { text-align: center; }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      padding: 30px 20px;
+    }
+
+    @media (max-width: 500px) {
+      .item-row { flex-wrap: wrap; }
+      .item-row .badge { order: -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="fridge">
+    <h1>Összes termék</h1>
+
+    <div class="item-list">
+      {% for item in items %}
+      <div class="item-row {% if not item.active %}inactive{% endif %}">
+        <div class="item-info">
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.description }}</p>
+        </div>
+
+        {% if item.active %}
+          <span class="badge on">Aktív</span>
+        {% else %}
+          <span class="badge off">Inaktív</span>
+        {% endif %}
+        <a href="{{ url_for('activate_item', item_id=item.id) }}" class="btn">Aktivál</a>
+        <a href="{{ url_for('delete_item', item_id=item.id) }}" class="btn btn-delete">Töröl</a>
+        
+      </div>
+      {% else %}
+      <div class="empty">Még nincs termék a készletben.</div>
+      {% endfor %}
+    </div>
+
+    <div class="page-actions">
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">Vissza</a>
+    </div>
+  </div>
+</body>
+</html>

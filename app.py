@@ -49,10 +49,11 @@ def index():
         if item.opened:
             opening = item.open_date
             item.after_open = opening + datetime.timedelta(item.after_open)
+            print(f"CALCULATED: {item.open_date.month}")
             item.opened = "Felbontva"
             if current_time.year == opening.year and current_time.month == opening.month and current_time.day == item.after_open.day:
                 item.after_open = "MA!"
-            elif current_time.year >= opening.year and current_time.month >= opening.month and current_time.day > item.after_open.day:
+            elif current_time.year >= opening.year and current_time.month >= opening.month and current_time.day > opening.day:
                 item.after_open = "LEJÁRT!!!"
         else:
             item.open_date = ""
@@ -61,6 +62,11 @@ def index():
     
     return render_template("index.html", inventory=inventory)
 
+
+@app.route("/items")
+def items(): 
+    items = Item.query.all()
+    return render_template("items.html", items=items)
 
 @app.route("/scan", methods=["GET"])
 def scan_item():
@@ -109,6 +115,15 @@ def add_item():
 @app.route("/delete/<int:item_id>", methods=["GET"])
 def delete_item(item_id):
     item = Item.query.get(item_id)
+    database.session.delete(item)
+    database.session.commit()
+
+    return redirect(url_for('items'))
+
+@app.route("/deactivate/<int:item_id>", methods=["GET"])
+def deactivate_item(item_id):
+    item = Item.query.get(item_id)
+    item.opened = False
     item.active = False
     database.session.commit()
 
@@ -118,6 +133,15 @@ def delete_item(item_id):
 def open_item(item_id):
     item = Item.query.get(item_id)
     item.opened = True
+    database.session.commit()
+
+    return redirect(url_for('index'))
+
+@app.route("/activate/<int:item_id>", methods=["GET"])
+def activate_item(item_id):
+    item = Item.query.get(item_id)
+    item.opened = False
+    item.active = True
     database.session.commit()
 
     return redirect(url_for('index'))
@@ -149,11 +173,12 @@ def push_scan():
     inventory = Item.query.all()
 
     for item in inventory:
+        # Item already present in the inventory
         if item.id == int(code):
             print(item)
             
-            new_item = Item(name=item.name, description=item.description, after_open=item.after_open,open_date=None, opened=False, active=True)
-            database.session.add(new_item)
+            selected_item = Item.query.get(item.id)
+            selected_item.active = True
             database.session.commit()
 
             return jsonify({
