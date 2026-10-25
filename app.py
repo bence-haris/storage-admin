@@ -48,7 +48,7 @@ def index():
         
         if item.opened:
             opening = item.open_date
-            item.after_open = opening + datetime.timedelta(item.after_open)
+            item.after_open = opening + datetime.timedelta(item.after_open-1)
             print(f"CALCULATED: {item.open_date.month}")
             item.opened = "Felbontva"
             if current_time.year == opening.year and current_time.month == opening.month and current_time.day == item.after_open.day:
@@ -187,12 +187,7 @@ def push_scan():
                 "type": symbol.type,
                 "item": {"name": item.name, "qty": item.description},
             })
-        #item = INVENTORY.get(code)
 
-    #if item:
-    #    new_item = Item(name=item["name"], description=item["desc"], after_open=item["after_open"],open_date=None, opened=False)
-    #    database.session.add(new_item)
-    #    database.session.commit()
 
     return jsonify({
         "found": False,
