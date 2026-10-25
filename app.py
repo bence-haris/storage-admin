@@ -51,9 +51,9 @@ def index():
             item.after_open = opening + datetime.timedelta(item.after_open-1)
             print(f"CALCULATED: {item.open_date.month}")
             item.opened = "Felbontva"
-            if current_time.year == opening.year and current_time.month == opening.month and current_time.day == item.after_open.day:
+            if current_time.year == item.after_open.year and current_time.month == item.after_open.month and current_time.day == item.after_open.day:
                 item.after_open = "MA!"
-            elif current_time.year >= opening.year and current_time.month >= opening.month and current_time.day > opening.day:
+            elif current_time.year >= item.after_open.year and current_time.month >= item.after_open.month and current_time.day > item.after_open.day:
                 item.after_open = "LEJÁRT!!!"
         else:
             item.open_date = ""
